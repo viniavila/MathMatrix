@@ -14,8 +14,14 @@ public:
 
     unsigned int rows() const;
     unsigned int columns() const;
+    double at(unsigned int r, unsigned int c) const;
+    void setItem(unsigned int r, unsigned int c, double value);
+    void setRow(unsigned int r, const std::initializer_list<double>& list);
+    void setColumn(unsigned int c, const std::initializer_list<double>& list);
+    void setMatrix(const std::initializer_list<std::initializer_list<double>>& matrix);
 
     MathMatrix& operator=(const MathMatrix& matrix);
+    const double& operator()(unsigned int r, unsigned int c) const;
     double& operator()(unsigned int r, unsigned int c);
 
 private:

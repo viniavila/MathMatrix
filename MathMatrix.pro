@@ -8,6 +8,7 @@ QT       -= gui
 
 TARGET = MathMatrix
 TEMPLATE = lib
+CONFIG += c++11
 
 DEFINES += MATHMATRIX_LIBRARY
 
