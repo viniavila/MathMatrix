@@ -8,6 +8,9 @@ struct Data {
         vsize(r*c)
     {
         if (vsize) v = new double[vsize];
+        double* pv = &(v[0]);
+        for (unsigned int i=0; i<vsize; ++i, ++pv)
+            *pv = 0;
     }
 
     ~Data() {
@@ -176,6 +179,23 @@ MathMatrix MathMatrix::operator*(double x) const {
     // this can be sliced in multithreaded applications
     for (unsigned int i=0; i<d->vsize; ++i, ++pvR, ++pv0)
         *pvR = *pv0 * x;
+    return result;
+}
+
+MathMatrix MathMatrix::operator*(const MathMatrix& m) const {
+    Q_ASSERT(d->columns == m.rows());
+    MathMatrix result(d->rows, m.columns());
+    double *pvR = result.internal_pointer();
+
+    // this can be sliced in multithreaded applications
+    for (unsigned int i=0; i<result.rows(); ++i) {
+        for (unsigned int j=0; j<result.columns(); ++j, ++pvR) {
+            double *pv0 = internal_pointer() + d->columns * i;
+            double *pv1 = m.internal_pointer() + j;
+            for (unsigned int k=0; k<d->columns; ++k, ++pv0, pv1+=m.columns())
+                *pvR += (*pv0 * *pv1);
+        }
+    }
     return result;
 }
 

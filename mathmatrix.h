@@ -27,6 +27,7 @@ public:
     MathMatrix operator+(const MathMatrix& m) const;
     MathMatrix operator-(const MathMatrix& m) const;
     MathMatrix operator*(double x) const;
+    MathMatrix operator*(const MathMatrix& m) const;
     MathMatrix operator/(double x) const;
     MathMatrix& operator+=(const MathMatrix& m);
     MathMatrix& operator-=(const MathMatrix& m);
@@ -35,8 +36,18 @@ public:
     MathMatrix& operator++();
     MathMatrix& operator--();
 
+    double trace() const;
+    double determinant() const;
+    MathMatrix subMatrix(unsigned int row, unsigned int column) const;
+    MathMatrix transposed() const;
+    MathMatrix& transpose();
+    MathMatrix inverted() const;
+    MathMatrix& invert();
 
     double* internal_pointer() const;
+
+    static MathMatrix identity(unsigned int size);
+    static MathMatrix diagonal(const std::initializer_list<double>& ditems);
 
 private:
     Data * d;
