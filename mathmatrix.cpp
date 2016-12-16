@@ -28,14 +28,6 @@ struct Data {
         return r * columns + c;
     }
 
-    // this can be sliced in multithreaded applications
-//    Data* detach() {
-//        Data* nd = new Data(rows, columns);
-//        for (unsigned int i = 0; i<vsize; ++i)
-//            nd->v[i] = v[i];
-//        return nd;
-//    }
-
     void detach(Data**d) {
         if (refCounter > 1) {
             refCounter--;
@@ -285,7 +277,41 @@ MathMatrix MathMatrix::subMatrix(unsigned int row, unsigned int column) const {
     return result;
 }
 
+MathMatrix MathMatrix::transposed() const {
+    Q_ASSERT(d->vsize > 0);
+    MathMatrix result(d->columns, d->rows);
+    double* pvR = result.internal_pointer();
+    double* pv0 = internal_pointer();
+    // this can be sliced in multithreaded applications
+    for (unsigned int i=0; i<d->vsize; ++i, ++pvR, pv0+=d->columns) {
+        pv0 = i % d->rows ? pv0 : internal_pointer() + (i/d->rows);
+        *pvR = *pv0;
+    }
+    return result;
+}
+
+MathMatrix& MathMatrix::transpose() {
+    Q_ASSERT(d->vsize > 0);
+    d->detach(&d);
+    double* nv = new double[d->vsize];
+    double* pv0 = internal_pointer();
+    double* pvR = &(nv[0]);
+    // this can be sliced in multithreaded applications
+    for (unsigned int i=0; i<d->vsize; ++i, ++pvR, pv0+=d->columns) {
+        pv0 = i % d->rows ? pv0 : internal_pointer() + (i/d->rows);
+        *pvR = *pv0;
+    }
+    // Replacing the internal vector and swap rows and columns values
+    unsigned int t = d->rows;
+    d->rows = d->columns;
+    d->columns = t;
+    delete[] d->v;
+    d->v = nv;
+    return *this;
+}
+
 MathMatrix MathMatrix::identity(unsigned int size) {
+    Q_ASSERT(size > 0);
     MathMatrix result(size, size);
     double* p = result.internal_pointer();
     // this can be sliced in multithreaded applications
@@ -295,6 +321,7 @@ MathMatrix MathMatrix::identity(unsigned int size) {
 }
 
 MathMatrix MathMatrix::diagonal(const std::initializer_list<double>& ditems) {
+    Q_ASSERT(ditems.size() > 0);
     MathMatrix result(ditems.size(), ditems.size());
     double *p = result.internal_pointer();
     auto iter = ditems.begin();
