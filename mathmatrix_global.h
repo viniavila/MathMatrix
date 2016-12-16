@@ -1,0 +1,12 @@
+#ifndef MATHMATRIX_GLOBAL_H
+#define MATHMATRIX_GLOBAL_H
+
+#include <QtCore/qglobal.h>
+
+#if defined(MATHMATRIX_LIBRARY)
+#  define MATHMATRIXSHARED_EXPORT Q_DECL_EXPORT
+#else
+#  define MATHMATRIXSHARED_EXPORT Q_DECL_IMPORT
+#endif
+
+#endif // MATHMATRIX_GLOBAL_H
