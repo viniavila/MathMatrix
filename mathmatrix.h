@@ -28,6 +28,13 @@ public:
     MathMatrix operator-(const MathMatrix& m) const;
     MathMatrix operator*(double x) const;
     MathMatrix operator/(double x) const;
+    MathMatrix& operator+=(const MathMatrix& m);
+    MathMatrix& operator-=(const MathMatrix& m);
+    MathMatrix& operator*=(double x);
+    MathMatrix& operator/=(double x);
+    MathMatrix& operator++();
+    MathMatrix& operator--();
+
 
     double* internal_pointer() const;
 

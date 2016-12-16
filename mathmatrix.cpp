@@ -190,6 +190,65 @@ MathMatrix MathMatrix::operator/(double x) const {
     return result;
 }
 
+MathMatrix& MathMatrix::operator+=(const MathMatrix& m) {
+    Q_ASSERT(d->rows == m.rows() && d->columns == m.columns());
+    d->detach(&d);
+    double* pv0 = internal_pointer();
+    double* pv1 = m.internal_pointer();
+    // this can be sliced in multithreaded applications
+    for (unsigned int i=0; i<d->vsize; ++i, ++pv0, ++pv1)
+        *pv0 += *pv1;
+    return *this;
+}
+
+MathMatrix& MathMatrix::operator-=(const MathMatrix& m) {
+    Q_ASSERT(d->rows == m.rows() && d->columns == m.columns());
+    d->detach(&d);
+    double* pv0 = internal_pointer();
+    double* pv1 = m.internal_pointer();
+    // this can be sliced in multithreaded applications
+    for (unsigned int i=0; i<d->vsize; ++i, ++pv0, ++pv1)
+        *pv0 -= *pv1;
+    return *this;
+}
+
+MathMatrix& MathMatrix::operator*=(double x) {
+    d->detach(&d);
+    double* pv0 = internal_pointer();
+    // this can be sliced in multithreaded applications
+    for (unsigned int i=0; i<d->vsize; ++i, ++pv0)
+        *pv0 *= x;
+    return *this;
+}
+
+MathMatrix& MathMatrix::operator/=(double x) {
+    Q_ASSERT(x != 0);
+    d->detach(&d);
+    double* pv0 = internal_pointer();
+    // this can be sliced in multithreaded applications
+    for (unsigned int i=0; i<d->vsize; ++i, ++pv0)
+        *pv0 /= x;
+    return *this;
+}
+
+MathMatrix& MathMatrix::operator++() {
+    d->detach(&d);
+    double* pv0 = internal_pointer();
+    // this can be sliced in multithreaded applications
+    for (unsigned int i=0; i<d->vsize; ++i, ++pv0)
+        (*pv0)++;
+    return *this;
+}
+
+MathMatrix& MathMatrix::operator--() {
+    d->detach(&d);
+    double* pv0 = internal_pointer();
+    // this can be sliced in multithreaded applications
+    for (unsigned int i=0; i<d->vsize; ++i, ++pv0)
+        (*pv0)--;
+    return *this;
+}
+
 MathMatrix operator*(double x, MathMatrix& m) {
     MathMatrix result(m.rows(), m.columns());
     double* pvR = result.internal_pointer();
