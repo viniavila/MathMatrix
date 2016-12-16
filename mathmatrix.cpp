@@ -68,6 +68,10 @@ MathMatrix::~MathMatrix() {
         delete d;
 }
 
+double* MathMatrix::internal_pointer() const {
+    return &(d->v[0]);
+}
+
 unsigned int MathMatrix::rows() const {
     return d->rows;
 }
@@ -141,55 +145,68 @@ double& MathMatrix::operator()(unsigned int r, unsigned int c) {
     return d->v[d->position(r, c)];
 }
 
-MathMatrix& MathMatrix::operator+(const MathMatrix& m) {
+MathMatrix MathMatrix::operator+(const MathMatrix& m)  const {
     Q_ASSERT(d->rows == m.rows() && d->columns == m.columns());
-    d->detach(&d);
+    MathMatrix result(d->rows, d->columns);
+    double* pvR = result.internal_pointer();
+    double* pv0 = internal_pointer();
+    double* pv1 = m.internal_pointer();
     // this can be sliced in multithreaded applications
-    for (unsigned int i=0; i<d->vsize; ++i)
-        d->v[i] += m.d->v[i];
-    return *this;
+    for (unsigned int i=0; i<d->vsize; ++i, ++pvR, ++pv0, ++pv1)
+        *pvR = *pv0 + *pv1;
+    return result;
 }
 
-MathMatrix& MathMatrix::operator-(const MathMatrix& m) {
+MathMatrix MathMatrix::operator-(const MathMatrix& m)  const {
     Q_ASSERT(d->rows == m.rows() && d->columns == m.columns());
-    d->detach(&d);
+    MathMatrix result(d->rows, d->columns);
+    double* pvR = result.internal_pointer();
+    double* pv0 = internal_pointer();
+    double* pv1 = m.internal_pointer();
     // this can be sliced in multithreaded applications
-    for (unsigned int i=0; i<d->vsize; ++i)
-        d->v[i] -= m.d->v[i];
-    return *this;
+    for (unsigned int i=0; i<d->vsize; ++i, ++pvR, ++pv0, ++pv1)
+        *pvR = *pv0 - *pv1;
+    return result;
 }
 
-MathMatrix& MathMatrix::operator*(double x) {
-    d->detach(&d);
+MathMatrix MathMatrix::operator*(double x) const {
+    MathMatrix result(d->rows, d->columns);
+    double* pvR = result.internal_pointer();
+    double* pv0 = internal_pointer();
     // this can be sliced in multithreaded applications
-    for (unsigned int i=0; i<d->vsize; ++i)
-        d->v[i] *= x;
-    return *this;
+    for (unsigned int i=0; i<d->vsize; ++i, ++pvR, ++pv0)
+        *pvR = *pv0 * x;
+    return result;
 }
 
-MathMatrix& MathMatrix::operator/(double x) {
+MathMatrix MathMatrix::operator/(double x) const {
     Q_ASSERT(x != 0);
-    d->detach(&d);
+    MathMatrix result(d->rows, d->columns);
+    double* pvR = result.internal_pointer();
+    double* pv0 = internal_pointer();
     // this can be sliced in multithreaded applications
-    for (unsigned int i=0; i<d->vsize; ++i)
-        d->v[i] /= x;
-    return *this;
+    for (unsigned int i=0; i<d->vsize; ++i, ++pvR, ++pv0)
+        *pvR = *pv0 / x;
+    return result;
 }
 
-
-MathMatrix& operator*(double x, MathMatrix& m) {
-    (m.d)->detach(&(m.d));
+MathMatrix operator*(double x, MathMatrix& m) {
+    MathMatrix result(m.rows(), m.columns());
+    double* pvR = result.internal_pointer();
+    double* pv0 = m.internal_pointer();
     // this can be sliced in multithreaded applications
-    for (unsigned int i=0; i<(m.d)->vsize; ++i)
-        (m.d)->v[i] *= x;
-    return m;
+    for (unsigned int i=0; i<(m.rows() * m.columns()); ++i, ++pvR, ++pv0)
+        *pvR = *pv0 * x;
+    return result;
 }
 
-MathMatrix& operator/(double x, MathMatrix& m) {
+MathMatrix operator/(double x, MathMatrix& m) {
     Q_ASSERT(x != 0);
-    (m.d)->detach(&(m.d));
+    MathMatrix result(m.rows(), m.columns());
+    double* pvR = result.internal_pointer();
+    double* pv0 = m.internal_pointer();
     // this can be sliced in multithreaded applications
-    for (unsigned int i=0; i<(m.d)->vsize; ++i)
-        (m.d)->v[i] = x / (m.d)->v[i];
-    return m;
+    for (unsigned int i=0; i<(m.rows() * m.columns()); ++i, ++pvR, ++pv0)
+        *pvR = *pv0 / x;
+    return result;
 }

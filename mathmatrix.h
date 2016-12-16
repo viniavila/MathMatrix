@@ -24,16 +24,20 @@ public:
     const double& operator()(unsigned int r, unsigned int c) const;
     double& operator()(unsigned int r, unsigned int c);
 
-    MathMatrix& operator+(const MathMatrix& m);
-    MathMatrix& operator-(const MathMatrix& m);
-    MathMatrix& operator*(double x);
-    MathMatrix& operator/(double x);
+    MathMatrix operator+(const MathMatrix& m) const;
+    MathMatrix operator-(const MathMatrix& m) const;
+    MathMatrix operator*(double x) const;
+    MathMatrix operator/(double x) const;
 
+    double* internal_pointer() const;
+
+private:
     Data * d;
+
 };
 
-MathMatrix& operator*(double x, MathMatrix& m);
-MathMatrix& operator/(double x, MathMatrix& m);
+MathMatrix operator*(double x, MathMatrix& m);
+MathMatrix operator/(double x, MathMatrix& m);
 
 
 #endif // MATHMATRIX_H
