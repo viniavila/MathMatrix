@@ -269,6 +269,23 @@ MathMatrix& MathMatrix::operator--() {
     return *this;
 }
 
+static MathMatrix MathMatrix::identity(unsigned int size) {
+    MathMatrix result(size, size);
+    double* p = result.internal_pointer();
+    for (unsigned int i=0; i<size; ++i, p+=(size+1))
+        *p = 1.0;
+    return result;
+}
+
+static MathMatrix MathMatrix::diagonal(const std::initializer_list<double>& ditems) {
+    MathMatrix result(ditems.size(), ditems.size());
+    double *p = result.internal_pointer();
+    auto iter = ditems.begin();
+    for (unsigned int i=0; i<ditems.size(); ++i, ++iter, p+=(ditems.size()+1))
+        *p = *iter;
+    return result;
+}
+
 MathMatrix operator*(double x, MathMatrix& m) {
     MathMatrix result(m.rows(), m.columns());
     double* pvR = result.internal_pointer();
