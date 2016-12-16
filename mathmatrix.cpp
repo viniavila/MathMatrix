@@ -120,6 +120,12 @@ void MathMatrix::setMatrix(const std::initializer_list<std::initializer_list<dou
     }
 }
 
+MathMatrix MathMatrix::clone() const {
+    MathMatrix c(*this);
+    d->detach(&(c.d));
+    return c;
+}
+
 MathMatrix& MathMatrix::operator=(const MathMatrix& matrix) {
     d->refCounter--;
     if (d->refCounter == 0)
@@ -259,6 +265,36 @@ MathMatrix& MathMatrix::operator--() {
     for (unsigned int i=0; i<d->vsize; ++i, ++pv0)
         (*pv0)--;
     return *this;
+}
+
+double MathMatrix::trace() const {
+    Q_ASSERT(d->rows == d->columns && d->vsize);
+    double result = 0;
+    double *p = internal_pointer();
+    for (unsigned int i=0; i<d->rows; ++i, p+=(d->rows+1))
+        result += (*p);
+    return result;
+}
+
+double MathMatrix::determinant() const {
+    Q_ASSERT(d->rows == d->columns && d->vsize > 0);
+    if (d->vsize == 1) return d->v[0];
+    if (d->vsize == 4) return (d->v[0] * d->v[3] - d->v[1] * d->v[2]);
+    // Gauss elimination;
+    double result = 1;
+    MathMatrix mod = clone();
+    unsigned int n = d->rows;
+    for (unsigned int j=0; j<n-1; ++j) {
+        for (unsigned int i=0; (i+j)<(n-1); ++i) {
+            double scalar = mod.at(i+1, j) / mod.at(i, j);
+            for (unsigned int k=j; k<n; ++k)
+                mod.setItem(i, k, (mod.at(i+1, k) / scalar) - mod.at(i, k));
+        }
+    }
+    double *p = mod.internal_pointer() + (n-1);
+    for (unsigned int i=0; i<n; ++i, p+=(n-1))
+        result *= *p;
+    return -result;
 }
 
 MathMatrix MathMatrix::subMatrix(unsigned int row, unsigned int column) const {

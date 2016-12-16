@@ -10,7 +10,7 @@ public:
     MathMatrix();
     MathMatrix(unsigned int rows, unsigned int cols);
     MathMatrix(const MathMatrix& matrix);
-    ~MathMatrix();
+    ~MathMatrix(); 
 
     unsigned int rows() const;
     unsigned int columns() const;
@@ -19,6 +19,7 @@ public:
     void setRow(unsigned int r, const std::initializer_list<double>& list);
     void setColumn(unsigned int c, const std::initializer_list<double>& list);
     void setMatrix(const std::initializer_list<std::initializer_list<double>>& matrix);
+    MathMatrix clone() const;
 
     MathMatrix& operator=(const MathMatrix& matrix);
     const double& operator()(unsigned int r, unsigned int c) const;
