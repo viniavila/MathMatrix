@@ -269,18 +269,36 @@ MathMatrix& MathMatrix::operator--() {
     return *this;
 }
 
-static MathMatrix MathMatrix::identity(unsigned int size) {
+MathMatrix MathMatrix::subMatrix(unsigned int row, unsigned int column) const {
+    Q_ASSERT(d->rows > 1 && d->columns > 1);
+    MathMatrix result(d->rows-1, d->columns-1);
+    double* pvR = result.internal_pointer();
+    double* pv0 = internal_pointer();
+    // this can be sliced in multithreaded applications
+    for (unsigned int i=0; i<result.rows(); ++i) {
+        pv0 += (i==row ? d->columns : 0);
+        for (unsigned int j=0; j<result.columns(); ++j, ++pvR, ++pv0) {
+            pv0 += (j==column ? 1 : 0);
+            *pvR = *pv0;
+        }
+    }
+    return result;
+}
+
+MathMatrix MathMatrix::identity(unsigned int size) {
     MathMatrix result(size, size);
     double* p = result.internal_pointer();
+    // this can be sliced in multithreaded applications
     for (unsigned int i=0; i<size; ++i, p+=(size+1))
         *p = 1.0;
     return result;
 }
 
-static MathMatrix MathMatrix::diagonal(const std::initializer_list<double>& ditems) {
+MathMatrix MathMatrix::diagonal(const std::initializer_list<double>& ditems) {
     MathMatrix result(ditems.size(), ditems.size());
     double *p = result.internal_pointer();
     auto iter = ditems.begin();
+    // this can be sliced in multithreaded applications
     for (unsigned int i=0; i<ditems.size(); ++i, ++iter, p+=(ditems.size()+1))
         *p = *iter;
     return result;
