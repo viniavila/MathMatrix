@@ -67,10 +67,12 @@ unsigned int MathMatrix::columns() const {
 }
 
 double MathMatrix::at(unsigned int r, unsigned int c) const {
+    Q_ASSERT(r < d->rows && c < d->columns);
     return d->v[d->position(r, c)];
 }
 
 void MathMatrix::setItem(unsigned int r, unsigned int c, double value) {
+    Q_ASSERT(r < d->rows && c < d->columns);
     if (d->refCounter > 1) {
         d->refCounter--;
         d = d->detach();
@@ -79,7 +81,7 @@ void MathMatrix::setItem(unsigned int r, unsigned int c, double value) {
 }
 
 void MathMatrix::setRow(unsigned int r, const std::initializer_list<double>& list) {
-    Q_ASSERT(list.size() >= d->columns);
+    Q_ASSERT(r < d->rows && list.size() >= d->columns);
     if (d->refCounter > 1) {
         d->refCounter--;
         d = d->detach();
@@ -91,7 +93,7 @@ void MathMatrix::setRow(unsigned int r, const std::initializer_list<double>& lis
 }
 
 void MathMatrix::setColumn(unsigned int c, const std::initializer_list<double>& list) {
-    Q_ASSERT(list.size() >= d->rows);
+    Q_ASSERT(c < d->columns && list.size() >= d->rows);
     if (d->refCounter > 1) {
         d->refCounter--;
         d = d->detach();
@@ -128,10 +130,12 @@ MathMatrix& MathMatrix::operator=(const MathMatrix& matrix) {
 }
 
 const double& MathMatrix::operator()(unsigned int r, unsigned int c) const {
+    Q_ASSERT(r < d->rows && c < d->columns);
     return d->v[d->position(r, c)];
 }
 
 double& MathMatrix::operator()(unsigned int r, unsigned int c) {
+    Q_ASSERT(r < d->rows && c < d->columns);
     if (d->refCounter > 1) {
         d->refCounter--;
         d = d->detach();
