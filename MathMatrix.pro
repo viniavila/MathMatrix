@@ -6,7 +6,8 @@
 
 QT       -= gui
 
-TARGET = MathMatrix
+win32:TARGET = MathMatrix
+unix:TARGET = mathmatrix
 TEMPLATE = lib
 CONFIG += c++11
 
@@ -14,8 +15,13 @@ DEFINES += MATHMATRIX_LIBRARY
 
 SOURCES += mathmatrix.cpp
 
-HEADERS += mathmatrix.h\
-        mathmatrix_global.h
+HEADERS += \
+    mathmatrix_global.h \
+    mathmatrix.h
+
+OTHER_FILES += \
+    LICENSE \
+    README.md
 
 unix {
     target.path = /usr/lib
