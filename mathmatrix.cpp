@@ -271,6 +271,7 @@ double MathMatrix::trace() const {
     Q_ASSERT(d->rows == d->columns && d->vsize);
     double result = 0;
     double *p = internal_pointer();
+    // this can be sliced in multithreaded applications
     for (unsigned int i=0; i<d->rows; ++i, p+=(d->rows+1))
         result += (*p);
     return result;
@@ -281,6 +282,7 @@ double MathMatrix::determinant() const {
     if (d->vsize == 1) return d->v[0];
     if (d->vsize == 4) return (d->v[0] * d->v[3] - d->v[1] * d->v[2]);
     // Gauss elimination;
+    // this can be sliced in multithreaded applications
     double result = 1;
     MathMatrix mod = clone();
     unsigned int n = d->rows;
@@ -327,7 +329,7 @@ MathMatrix MathMatrix::transposed() const {
 }
 
 MathMatrix& MathMatrix::transpose() {
-    Q_ASSERT(d->vsize > 0);
+    Q_ASSERT_X(d->vsize > 0, "MathMatrix::transpose", "This matrix has no dimensions, cannot be transposed;");
     d->detach(&d);
     double* nv = new double[d->vsize];
     double* pv0 = internal_pointer();
@@ -344,6 +346,30 @@ MathMatrix& MathMatrix::transpose() {
     delete[] d->v;
     d->v = nv;
     return *this;
+}
+
+MathMatrix MathMatrix::inverted() const {
+    Q_ASSERT_X(d->rows == d->columns, "MathMatrix::inverted", "This matrix is not square, cannot be inverted");
+    double det = determinant();
+    Q_ASSERT_X(det != 0, "MathMatrix::inverted", "Cannot be inverted because its determinant is zero.");
+    MathMatrix adjunct(d->rows, d->columns);
+    for (unsigned int i=0; i<d->rows; ++i) {
+        for (unsigned int j=0; j<d->columns; ++i) {
+            MathMatrix sub = subMatrix(i, j);
+            adjunct.setItem(i, j, std::pow(-1, i+j+2)*sub.determinant());
+        }
+    }
+    adjunct.transpose();
+    return (1.0/det)*adjunct;
+}
+
+MathMatrix& MathMatrix::invert() {
+    MathMatrix inv = inverted();
+    d->refCounter--;
+    if (d->refCounter == 0) delete d;
+    d = inv.d;
+    d->refCounter++;
+    return (*this);
 }
 
 MathMatrix MathMatrix::identity(unsigned int size) {
