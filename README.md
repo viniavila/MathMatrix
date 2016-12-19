@@ -64,7 +64,7 @@ m2.setItem(0,0,2.34); // the system clones the internal data to m2 and then set 
 MathMatrix m3 = m0.clone(); // m3 and m0 has the same data, but they are not sharing memory as m0 and m1 do now.
 ```
 
-*MathMatrix* supports almost all matrix operations that we expect, but Inverted Matrix (will be implemented *SOON*). You can do the follow operations:
+*MathMatrix* supports all matrix operations that we usially expect. You can do the follow operations:
 * Addiction of two matrices (they must have the same size)
 * Subtraction of two matrices (they must have the same size)
 * Multiplication of matrix and scalar
@@ -83,12 +83,14 @@ Other special operations are also available
 * `subMatrix(row, column)`. Return a sub-matrix of the original matrix, deleting the `row` and the `column`
 * `transposed()`. Returns a matrix that is the transposed matrix of the original matrix
 * `transpose()`. In-place transpose operation, the original matrix is modified
+* `inverse()`. Returns a matrix that is the inverse matrix of the original matrix (matrix must be square and determinant must be different from zero).
+* `invert()`. In-place matrix inversion. The matrix is replaced by its inverse. This method consumes the same amount of memory of `inverted`, and have the same allocations quantity, but it is convenient if you do not need the original matrix and want to save some memory as the original matrix data is destroyed and replaced by the inverse matrix data before returning.
 
 There are some `static` methods to create special matrices:
 * `identity(n)`. Creates an identity matrix of size `n` (a square matrix _nxn_ that have all items equal to zero but the main diagonal which items are equal to 1)
 * `diagonal(list}`. Creates a diagonal matrix with the size equal to the size of the `list` and the main diagonal values equal to the list values.
 
-For the hack'ish people, a pointer to the vector that holds the internal data are exposed using the member `double* internal_pointer() const`. This pointer is necessary to implement non-member functions that needs directly access to the data.
+For the hack'ish people, a pointer to the vector that holds the internal data are exposed using the member `double* internal_pointer() const`. This pointer is necessary to implement non-member functions that needs direct access to the data (basically the overloaded operators * and /).
 
 This code is not still optimized as I have said before. There is no implementation to multithreading, the there is some dependency to Qt, which I want to remove further, to make it available even to non-Qt users. I do not tested it much so use it at your own risk. Issues or bug reports are appreciated.
 
