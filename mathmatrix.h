@@ -47,20 +47,19 @@ public:
     MathMatrix inverse() const;
     MathMatrix& invert();
 
-    double* internal_pointer() const;
-
     static MathMatrix identity(unsigned int size);
     static MathMatrix diagonal(const std::initializer_list<double>& ditems);
 
     operator QString() const;
 
+    double* internal_pointer() const;
+
 private:
     Data * d;
-
 };
 
-MathMatrix operator*(double x, MathMatrix& m);
-MathMatrix operator/(double x, MathMatrix& m);
+MathMatrix operator*(double x, const MathMatrix& m);
+MathMatrix operator/(double x, const MathMatrix& m);
 
 
 #endif // MATHMATRIX_H

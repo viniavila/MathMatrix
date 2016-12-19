@@ -446,7 +446,7 @@ MathMatrix::operator QString() const {
     return "[" % ll.join(", ") % "]";
 }
 
-MathMatrix operator*(double x, MathMatrix& m) {
+MathMatrix operator*(double x, const MathMatrix& m) {
     MathMatrix result(m.rows(), m.columns());
     double* pvR = result.internal_pointer();
     double* pv0 = m.internal_pointer();
@@ -456,13 +456,12 @@ MathMatrix operator*(double x, MathMatrix& m) {
     return result;
 }
 
-MathMatrix operator/(double x, MathMatrix& m) {
-    Q_ASSERT(x != 0);
+MathMatrix operator/(double x, const MathMatrix& m) {
     MathMatrix result(m.rows(), m.columns());
-    double* pvR = result.internal_pointer();
     double* pv0 = m.internal_pointer();
+    double* pvR = result.internal_pointer();
     // this can be sliced in multithreaded applications
     for (unsigned int i=0; i<(m.rows() * m.columns()); ++i, ++pvR, ++pv0)
-        *pvR = *pv0 / x;
+        *pvR = x / *pv0;
     return result;
 }
