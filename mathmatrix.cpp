@@ -1,4 +1,6 @@
 #include "mathmatrix.h"
+#include <QStringList>
+#include <QStringBuilder>
 
 struct Data {
     Data(unsigned int r, unsigned int c) :
@@ -124,6 +126,34 @@ MathMatrix MathMatrix::clone() const {
     MathMatrix c(*this);
     d->detach(&(c.d));
     return c;
+}
+
+MathMatrix& MathMatrix::swapRows(unsigned int row1, unsigned int row2) {
+    Q_ASSERT(row1 != row2 && row1 < d->rows && row2 < d->rows);
+    double *p1 = internal_pointer() + d->position(row1, 0);
+    double *p2 = internal_pointer() + d->position(row2, 0);
+    double temp;
+    // copy content from row 1 to temp, row 2 to row 1, temp to row 2
+    for (unsigned int i=0; i<d->columns; ++i, ++p1, ++p2) {
+        temp = *p1;
+        *p1 = *p2;
+        *p2 = temp;
+    }
+    return *this;
+}
+
+MathMatrix& MathMatrix::swapColumns(unsigned int col1, unsigned int col2) {
+    Q_ASSERT(col1 != col2 && col1 < d->columns && col2 < d->columns);
+    double *p1 = internal_pointer() + d->position(0, col1);
+    double *p2 = internal_pointer() + d->position(0, col2);
+    double temp;
+    // copy content from col 1 to temp, col 2 to col 1, temp to col 2
+    for (unsigned int i=0; i<d->columns; ++i, p1+=(d->columns), p2+=(d->columns)) {
+        temp = *p1;
+        *p1 = *p2;
+        *p2 = temp;
+    }
+    return *this;
 }
 
 MathMatrix& MathMatrix::operator=(const MathMatrix& matrix) {
@@ -288,15 +318,24 @@ double MathMatrix::determinant() const {
     unsigned int n = d->rows;
     for (unsigned int j=0; j<n-1; ++j) {
         for (unsigned int i=0; (i+j)<(n-1); ++i) {
-            double scalar = mod.at(i+1, j) / mod.at(i, j);
-            for (unsigned int k=j; k<n; ++k)
-                mod.setItem(i, k, (mod.at(i+1, k) / scalar) - mod.at(i, k));
+            if (mod.at(i,j) != 0) {
+                if (mod.at(i+1, j) == 0) {
+                    mod.swapRows(i, i+1);
+                    result = -result; // swapping rows changes the determinant signal
+                }
+                else {
+                    double scalar = mod.at(i, j) / mod.at(i+1, j);
+                    for (unsigned int k=j; k<n; ++k)
+                        mod.setItem(i, k, (mod.at(i+1, k) * scalar) - mod.at(i, k));
+                    result = -result; // because you are multiplying the row i by -1 before adding the multiple of the row i+1
+                }
+            }
         }
     }
     double *p = mod.internal_pointer() + (n-1);
     for (unsigned int i=0; i<n; ++i, p+=(n-1))
         result *= *p;
-    return -result;
+    return std::roundl((-result)*1e10)/1.0e10;
 }
 
 MathMatrix MathMatrix::subMatrix(unsigned int row, unsigned int column) const {
@@ -348,13 +387,13 @@ MathMatrix& MathMatrix::transpose() {
     return *this;
 }
 
-MathMatrix MathMatrix::inverted() const {
+MathMatrix MathMatrix::inverse() const {
     Q_ASSERT_X(d->rows == d->columns, "MathMatrix::inverted", "This matrix is not square, cannot be inverted");
     double det = determinant();
     Q_ASSERT_X(det != 0, "MathMatrix::inverted", "Cannot be inverted because its determinant is zero.");
     MathMatrix adjunct(d->rows, d->columns);
     for (unsigned int i=0; i<d->rows; ++i) {
-        for (unsigned int j=0; j<d->columns; ++i) {
+        for (unsigned int j=0; j<d->columns; ++j) {
             MathMatrix sub = subMatrix(i, j);
             adjunct.setItem(i, j, std::pow(-1, i+j+2)*sub.determinant());
         }
@@ -364,7 +403,7 @@ MathMatrix MathMatrix::inverted() const {
 }
 
 MathMatrix& MathMatrix::invert() {
-    MathMatrix inv = inverted();
+    MathMatrix inv = inverse();
     d->refCounter--;
     if (d->refCounter == 0) delete d;
     d = inv.d;
@@ -391,6 +430,20 @@ MathMatrix MathMatrix::diagonal(const std::initializer_list<double>& ditems) {
     for (unsigned int i=0; i<ditems.size(); ++i, ++iter, p+=(ditems.size()+1))
         *p = *iter;
     return result;
+}
+
+MathMatrix::operator QString() const {
+    if (!d->vsize) return "[]";
+    double *p = internal_pointer();
+    QStringList ll;
+    for (unsigned int i=0; i<d->rows; ++i) {
+        QStringList l;
+        for (unsigned int j=0; j<d->columns; ++j, ++p) {
+            l << QString("%1").arg(*p);
+        }
+        ll << "[" % l.join(", ") % "]";
+    }
+    return "[" % ll.join(", ") % "]";
 }
 
 MathMatrix operator*(double x, MathMatrix& m) {

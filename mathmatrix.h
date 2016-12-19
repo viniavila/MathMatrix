@@ -20,6 +20,8 @@ public:
     void setColumn(unsigned int c, const std::initializer_list<double>& list);
     void setMatrix(const std::initializer_list<std::initializer_list<double>>& matrix);
     MathMatrix clone() const;
+    MathMatrix& swapRows(unsigned int row1, unsigned int row2);
+    MathMatrix& swapColumns(unsigned int row1, unsigned int row2);
 
     MathMatrix& operator=(const MathMatrix& matrix);
     const double& operator()(unsigned int r, unsigned int c) const;
@@ -42,13 +44,15 @@ public:
     MathMatrix subMatrix(unsigned int row, unsigned int column) const;
     MathMatrix transposed() const;
     MathMatrix& transpose();
-    MathMatrix inverted() const;
+    MathMatrix inverse() const;
     MathMatrix& invert();
 
     double* internal_pointer() const;
 
     static MathMatrix identity(unsigned int size);
     static MathMatrix diagonal(const std::initializer_list<double>& ditems);
+
+    operator QString() const;
 
 private:
     Data * d;
